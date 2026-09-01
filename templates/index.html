@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>todo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css?v=23">
+</head>
+<body>
+  <main class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">✦</span><span>todo</span></div>
+      <div class="date-block"><span class="eyebrow">TODAY</span><strong id="today-label"></strong></div>
+      <nav class="filters" aria-label="Task filters">
+        <button class="filter active" data-status="all"><span>All tasks</span><b id="all-count">0</b></button>
+        <button class="filter" data-status="active"><span>In progress</span><b id="active-count">0</b></button>
+        <button class="filter" data-status="completed"><span>Completed</span><b id="completed-count">0</b></button>
+      </nav>
+      <button id="theme-toggle" class="theme-toggle" type="button">Dark mode</button>
+      <div class="sidebar-foot"><span class="pulse"></span><span>Local workspace</span></div>
+    </aside>
+
+    <section class="content">
+      <header class="topbar"><div><span class="eyebrow">PERSONAL BOARD</span><h1>note your task<br><em>what matters.</em></h1></div><div id="progress-ring" class="progress-ring" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-text"><span id="progress-percent">0%</span><small>done</small></div></div></header>
+      <section class="composer" aria-label="Add a task"><input id="task-input" type="text" placeholder="What needs doing?" maxlength="140"><select id="priority-input" aria-label="Priority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select><input id="date-input" type="date" aria-label="Due date"><button id="add-task" class="add-button" title="Add task">+</button></section>
+      <div class="list-head"><span id="list-label">ALL TASKS</span><button id="clear-completed" class="text-button">Clear completed</button></div>
+      <section id="task-list" class="task-list"></section>
+      <div id="empty-state" class="empty-state" hidden><div class="empty-icon">✓</div><h2>Nothing here yet.</h2><p>Start with one small thing. Momentum likes company.</p></div>
+    </section>
+  </main>
+  <script src="/static/app.js?v=15"></script>
+</body>
+</html>
