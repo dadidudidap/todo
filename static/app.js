@@ -70,8 +70,10 @@ document.head.appendChild(progressRingStyles);
 
 const themeToggle = $('#theme-toggle');
 
-if (localStorage.getItem('todo-theme') === 'dark') {
+if (localStorage.getItem('todo-theme') !== 'light') {
   document.body.dataset.theme = 'dark';
+} else {
+  document.body.dataset.theme = 'light';
 }
 
 themeToggle.textContent = document.body.dataset.theme === 'dark'
@@ -214,6 +216,7 @@ $('#task-list').addEventListener('click', async (event) => {
   const button = event.target.closest('[data-action]');
   if (!button) return;
   const task = state.tasks.find((item) => item.id === Number(button.dataset.id));
+  if (!task) return;
 
   try {
     if (button.dataset.action === 'complete') {

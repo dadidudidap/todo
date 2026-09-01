@@ -1,19 +1,23 @@
-import sqlite3
-from pathlib import Path
+import aiosqlite
+import os
+from contextlib import asynccontextmanager
+from dotenv import load_dotenv
 
-BASE_DIR = Path(__file__).resolve().parent
-DATABASE = BASE_DIR / "todo.db"
+load_dotenv()
 
-def get_db():
-    """Open a SQLite connection configured to return rows by column name."""
-    connection = sqlite3.connect(DATABASE)
-    connection.row_factory = sqlite3.Row
-    return connection
+DATABASE = os.getenv("DATABASE_URL")
 
-def init_db():
+@asynccontextmanager
+async def get_db():
+    """Yield an async SQLite connection configured to return rows by column name."""
+    async with aiosqlite.connect(DATABASE) as connection:
+        connection.row_factory = aiosqlite.Row
+        yield connection
+
+async def init_db():
     """Create the tasks table when the application starts for the first time."""
-    with get_db() as connection:
-        connection.execute(
+    async with get_db() as connection:
+        await connection.execute(
             """
             CREATE TABLE IF NOT EXISTS tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,6 +30,7 @@ def init_db():
             )
             """
         )
+        await connection.commit()
 
 def serialize_task(task):
     """Convert a SQLite row into JSON-friendly task data."""
