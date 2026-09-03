@@ -449,6 +449,44 @@ body {
   max-width: 300px;
 }
 
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.page-btn {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--ink);
+  font: 500 12px var(--mono);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.page-btn:hover:not(:disabled):not(.active) {
+  border-color: var(--lime);
+}
+
+.page-btn.active {
+  background: var(--ink);
+  color: var(--lime);
+  border-color: var(--ink);
+}
+
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
 /* Mobile responsive */
 /* Tablet / small desktop: shrink gaps and paddings so two columns still fit */
 @media (max-width: 900px) {
@@ -625,6 +663,16 @@ body {
     padding: 40px 16px;
   }
 
+  .pagination {
+    margin-top: 14px;
+  }
+
+  .page-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
   .empty-icon {
     font-size: 36px;
   }
@@ -716,6 +764,18 @@ body[data-theme="dark"] .filter.active b {
 body[data-theme="dark"] .add-button {
   background: var(--lime);
   color: #20252b;
+}
+
+body[data-theme="dark"] .page-btn {
+  background: #303837;
+  border-color: #39413f;
+  color: var(--ink);
+}
+
+body[data-theme="dark"] .page-btn.active {
+  background: var(--lime);
+  color: #20252b;
+  border-color: var(--lime);
 }
 
 body[data-theme="dark"] .add-button:hover {

@@ -1,4 +1,4 @@
-const state = { status: 'all', tasks: [] };
+const state = { status: 'all', tasks: [], page: 1, perPage: 10 };
 
 // Find one page element using a CSS selector.
 const $ = (selector) => document.querySelector(selector);
@@ -126,7 +126,12 @@ function render() {
     || (state.status === 'completed' && task.completed)
   ));
 
-  list.innerHTML = visible.map((task, index) => `
+  const totalPages = Math.max(1, Math.ceil(visible.length / state.perPage));
+  if (state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.perPage;
+  const paged = visible.slice(start, start + state.perPage);
+
+  list.innerHTML = paged.map((task, index) => `
     <article class="task ${task.completed ? 'completed' : ''}" style="animation-delay:${index * 35}ms">
       <button class="task-check" data-action="complete" data-id="${task.id}" aria-label="Mark ${task.title} complete"></button>
       <div>
@@ -137,6 +142,20 @@ function render() {
       <button class="delete" data-action="delete" data-id="${task.id}" aria-label="Delete ${task.title}">×</button>
     </article>
   `).join('');
+
+  const pagination = $('#pagination');
+  if (totalPages <= 1) {
+    pagination.innerHTML = '';
+  } else {
+    let buttons = '';
+    buttons += `<button class="page-btn" data-page="prev" ${state.page === 1 ? 'disabled' : ''}>‹</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      buttons += `<button class="page-btn ${i === state.page ? 'active' : ''}" data-page="${i}">${i}</button>`;
+    }
+    buttons += `<button class="page-btn" data-page="next" ${state.page === totalPages ? 'disabled' : ''}>›</button>`;
+    pagination.innerHTML = buttons;
+  }
+
   $('#empty-state').hidden = visible.length > 0;
   $('#all-count').textContent = state.tasks.length;
   $('#active-count').textContent = state.tasks.filter((task) => !task.completed).length;
@@ -208,6 +227,7 @@ document.querySelectorAll('.filter').forEach((button) => button.addEventListener
   document.querySelectorAll('.filter').forEach((item) => item.classList.remove('active'));
   button.classList.add('active');
   state.status = button.dataset.status;
+  state.page = 1;
   render();
 }));
 
@@ -249,6 +269,17 @@ $('#task-list').addEventListener('click', async (event) => {
 $('#clear-completed').addEventListener('click', async () => {
   await api('/api/tasks', { method: 'DELETE' });
   await loadTasks();
+});
+
+// Handle pagination button clicks.
+$('#pagination').addEventListener('click', (event) => {
+  const button = event.target.closest('.page-btn');
+  if (!button || button.disabled) return;
+  const val = button.dataset.page;
+  if (val === 'prev') state.page--;
+  else if (val === 'next') state.page++;
+  else state.page = Number(val);
+  render();
 });
 
 $('#today-label').textContent = new Intl.DateTimeFormat('en', {

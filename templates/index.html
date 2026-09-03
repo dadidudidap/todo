@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/styles.css?v=23">
+    <link rel="stylesheet" href="/static/styles.css?v=24">
 </head>
 <body>
   <main class="app-shell">
@@ -28,9 +28,10 @@
       <section class="composer" aria-label="Add a task"><input id="task-input" type="text" placeholder="What needs doing?" maxlength="140"><select id="priority-input" aria-label="Priority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select><input id="date-input" type="date" aria-label="Due date"><button id="add-task" class="add-button" title="Add task">+</button></section>
       <div class="list-head"><span id="list-label">ALL TASKS</span><button id="clear-completed" class="text-button">Clear completed</button></div>
       <section id="task-list" class="task-list"></section>
+      <nav id="pagination" class="pagination" aria-label="Pagination"></nav>
       <div id="empty-state" class="empty-state" hidden><div class="empty-icon">✓</div><h2>Nothing here yet.</h2><p>Start with one small thing. Momentum likes company.</p></div>
     </section>
   </main>
-  <script src="/static/app.js?v=15"></script>
+  <script src="/static/app.js?v=16"></script>
 </body>
 </html>

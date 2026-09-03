@@ -1,7 +1,9 @@
 from datetime import date
 from quart import Blueprint, jsonify, render_template, request
 from sqlalchemy import select, delete, case
+from pydantic import ValidationError
 from database import TaskModel, get_db
+from schemas import TaskCreate, TaskUpdate
 
 # Create a blueprint named 'tasks_bp'
 bp = Blueprint('tasks_bp', __name__)
@@ -42,25 +44,23 @@ async def list_tasks():
 @bp.post("/api/tasks")
 async def create_task():
     data = await request.get_json(silent=True) or {}
-    title = str(data.get("title", "")).strip()
-    priority = data.get("priority", "medium")
-    due_date = data.get("due_date") or None
-    
-    if not title:
-        return jsonify({"error": "A task title is required."}), 400
-    if priority not in {"low", "medium", "high"}:
-        return jsonify({"error": "Priority must be low, medium, or high."}), 400
-    if due_date:
-        try:
-            date.fromisoformat(due_date)
-        except ValueError:
-            return jsonify({"error": "Due date must use YYYY-MM-DD format."}), 400
+
+    try:
+        task_data = TaskCreate.model_validate(data)
+    except ValidationError as e:
+        # Extract the cleanest error message for the frontend
+        error_msg = str(e.errors()[0]['msg']).replace("Value error, ", "")
+        return jsonify({"error": error_msg}), 400
             
     async with get_db() as session:
         """Previous SQL query for reference:
         INSERT INTO tasks (title, priority, due_date) VALUES (title_value, priority_value, due_date_value)
         """
-        new_task = TaskModel(title=title, priority=priority, due_date=due_date)
+        new_task = TaskModel(
+            title=task_data.title, 
+            priority=task_data.priority, 
+            due_date=task_data.due_date.isoformat() if task_data.due_date else None
+        )
         session.add(new_task)
         await session.commit()
         await session.refresh(new_task)
@@ -71,6 +71,12 @@ async def create_task():
 @bp.patch("/api/tasks/<int:task_id>")
 async def update_task(task_id):
     data = await request.get_json(silent=True) or {}
+
+    try:
+        task_update = TaskUpdate.model_validate(data)
+    except ValidationError as e:
+        error_msg = str(e.errors()[0]['msg']).replace("Value error, ", "")
+        return jsonify({"error": error_msg}), 400
     
     async with get_db() as session:
         """Previous SQL query for reference:
@@ -80,38 +86,13 @@ async def update_task(task_id):
         if not task:
             return jsonify({"error": "Task not found."}), 404
 
-        has_changes = False
+        update_data = task_update.model_dump(exclude_unset=True)
         
-        if "completed" in data:
-            task.completed = bool(data["completed"])
-            task.complete_date = data.get("complete_date")
-            has_changes = True
+        if "due_date" in update_data and update_data["due_date"] is not None:
+            update_data["due_date"] = update_data["due_date"].isoformat()
             
-        if "title" in data:
-            title = str(data["title"]).strip()
-            if not title:
-                return jsonify({"error": "A task title is required."}), 400
-            task.title = title
-            has_changes = True
-            
-        if "priority" in data:
-            if data["priority"] not in {"low", "medium", "high"}:
-                return jsonify({"error": "Invalid priority."}), 400
-            task.priority = data["priority"]
-            has_changes = True
-            
-        if "due_date" in data:
-            due_date = data["due_date"] or None
-            if due_date:
-                try:
-                    date.fromisoformat(due_date)
-                except ValueError:
-                    return jsonify({"error": "Due date must use YYYY-MM-DD format."}), 400
-            task.due_date = due_date
-            has_changes = True
-            
-        if not has_changes:
-            return jsonify({"error": "No changes supplied."}), 400
+        for key, value in update_data.items():
+            setattr(task, key, value)
             
         await session.commit()
         return jsonify(task.to_dict())
